@@ -17,8 +17,3 @@ class ArticleViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    
-
-class BlogListView(ListAPIView):
-    queryset = Blog.objects.all()
-    renderer_classes = (TemplateHTMLRenderer, )

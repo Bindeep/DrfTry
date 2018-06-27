@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.js"></script>
+
+</head>
+<body>
+<div class="container">
+    <div class="page-header">    
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+            <div class="col-4">
+              <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item list-group-item-action active" id="list-home-list" data-toggle="list" href="#list-home" role="tab" aria-controls="home">Article Titles</a>
+              </div>
+            </div>
+            <div class="col-8">
+              <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="content" role="tabpanel" aria-labelledby="list-home-list">Here You Can select the artices that yout like to see the details of.</div>
+            </div>
+          </div>
+</div>
+</body>
+<style>
+    .container{
+        padding: 40px;
+    }
+</style>
+<style>
+    .page-header{
+        font-size: 30px;
+        font-style: oblique;
+        color: brown;
+    }
+</style>
+
+<script>
+    let searchParams = new URLSearchParams(window.location.search)
+    let id = searchParams.get('id')
+    $( document ).ready(function(){
+        let detail_url = `http://localhost:8000/blogs/${id}/`
+        $.get(detail_url, function(data){
+            let blog_html = `<h1>${data['title']}</h1><p>${data['content']}</p>`
+            $(".page-header").append(blog_html)
+            for(let article of data.articles){
+                let title_html = `<a class="list-group-item list-group-item-action"
+                                    id="list-home-list" data-toggle="list" href="#list-${article['id']}" role="tab"
+                                    onclick="getDetail(${article['id']})"
+                                    aria-controls="home">${article['name']}</a>`
+                $("#list-tab").append(title_html)
+            }
+        })
+    })
+</script>
+<script>
+    function getDetail(id){
+        let detail_url = `http://localhost:8000/articles/${id}/`
+        $.get(detail_url, function (data){
+            console.log(data)
+            let content = `<div class="card">
+                        <div class="card-header">
+                          By ${data['get_author']}
+                        </div>
+                        <div class="card-body">
+                          <p class="card-text">${data['content']}</p>
+                        </div>
+                        <button type="button btn-sm" class="btn btn-info" onclick="increaseLike(${data['id']})">
+                        Likes</span> <span class="badge badge-light">${data['like']}</span>
+                        </button>
+                      </div>
+                    </div>`
+            $("#content").empty()
+            $("#content").append(content)
+        })
+    }
+</script>
+
+<script>
+    function increaseLike(id){
+        $.ajax(
+            {
+                url:`http://localhost:8000/articles/${id}/uplike`,
+                success: function(data){
+                    
+                }
+            }
+        )
+    }
+</script>
+
+</html>

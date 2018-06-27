@@ -16,6 +16,10 @@ class Article(models.Model):
 
     def __str__(self):
         return self.name
+    
+    @property
+    def get_author(self):
+        return self.author.username
 
 
 class Comment(models.Model):
