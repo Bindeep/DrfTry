@@ -66,7 +66,6 @@
     function getDetail(id){
         let detail_url = `http://localhost:8000/articles/${id}/`
         $.get(detail_url, function (data){
-            console.log(data)
             let content = `<div class="card">
                         <div class="card-header">
                           By ${data['get_author']}
@@ -75,7 +74,7 @@
                           <p class="card-text">${data['content']}</p>
                         </div>
                         <button type="button btn-sm" class="btn btn-info" onclick="increaseLike(${data['id']})">
-                        Likes</span> <span class="badge badge-light">${data['like']}</span>
+                        Like</span> <span class="badge badge-light" id="likeCount">${data['like']}</span>
                         </button>
                       </div>
                     </div>`
@@ -89,9 +88,12 @@
     function increaseLike(id){
         $.ajax(
             {
-                url:`http://localhost:8000/articles/${id}/uplike`,
+                url:`http://localhost:8000/articles/${id}/uplike/`,
+                method: 'PATCH',
                 success: function(data){
-                    
+                    if(data['liked']){
+                        $("#likeCount").text(data['count'])
+                    }
                 }
             }
         )
