@@ -13,7 +13,7 @@ class Article(models.Model):
     author = models.ForeignKey(
         User, related_name='related_articles', on_delete=models.DO_NOTHING)
     is_published = models.BooleanField(default=False)
-    like = models.PositiveIntegerField(default=0)
+    is_archived = False
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
 
@@ -28,10 +28,21 @@ class Article(models.Model):
 class Comment(models.Model):
     article = models.ForeignKey(
         Article, related_name='comments', on_delete=models.CASCADE)
-    title = models.TextField()
+    content = models.TextField()
     commented_by = models.ForeignKey(
         User, related_name='comments', on_delete=models.DO_NOTHING)
     commented_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.title[:30]} commented by {self.commented_by}'
+
+
+class Like(models.Model):
+    article = models.ForeignKey(Article, related_name='article_likes', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='user_likes', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'liked {self.article} by {self.user.username}'
+    
+    class Meta:
+        unique_together = ('user', 'article')
