@@ -13,15 +13,15 @@ class Article(models.Model):
     author = models.ForeignKey(
         User, related_name='related_articles', on_delete=models.DO_NOTHING)
     is_published = models.BooleanField(default=False)
-    is_archived = False
-    created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
+    is_archived = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
     @property
-    def get_author(self):
+    def author_name(self):
         return self.author.username
 
 
@@ -35,6 +35,10 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'{self.title[:30]} commented by {self.commented_by}'
+
+    @property
+    def commented_by_name(self):
+        return self.commented_by.username
 
 
 class Like(models.Model):

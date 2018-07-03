@@ -1,13 +1,13 @@
 from rest_framework import serializers
 from ..models.blog import Blog
 from ..models.articles import Article, Comment, Like
-from django.contrib.auth.models import User
+
 
 class BlogRelatedArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ( 'blog' ,'id', 'name')
+        fields = ('blog', 'id', 'name')
 
 
 class BlogSerializer(serializers.ModelSerializer):
@@ -18,6 +18,7 @@ class BlogSerializer(serializers.ModelSerializer):
     #     # read_only=True,
     # )
     articles = BlogRelatedArticleSerializer(many=True)
+
     class Meta:
         model = Blog
         fields = ('id', 'title', 'content', 'created_at', 'author', 'articles', 'get_name')
@@ -41,16 +42,32 @@ class BlogSerializer(serializers.ModelSerializer):
 #         )
 
 
+class CommentSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Comment
+        fields = ['content', 'commented_by_name']
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+
+    created_at = serializers.SerializerMethodField()
+    has_user_liked = serializers.SerializerMethodField()
+    comments = CommentSerializer(many=True)
+
+    def get_created_at(self, obj):
+        created_at = obj.created_at.strftime("%A %d. %B %Y")
+        return created_at
+
+    def get_has_user_liked(self, obj):
+        user = self.context['request'].user
+        return obj.article_likes.filter(user=user).exists()
 
     def get_fields(self, *args, **kwargs):
         fields = super().get_fields(*args, **kwargs)
         request = self.context.get('request')
         if not request.user.is_superuser:
-            if request.method ==  ['POST', 'PUT']:
+            if request.method == ['POST', 'PUT']:
                 fields.pop('is_published')
                 fields.pop('author')
             elif request.method == 'PUT':
@@ -60,28 +77,25 @@ class ArticleSerializer(serializers.ModelSerializer):
         return fields
     
     def create(self, validated_data):
-        user = self.context.get('request').user
-        validated_data.update(
-            {
-                'author': user,
-            }
-        )
+        validated_data['author'] = self.context['user']
         return super().create(validated_data)
 
     class Meta:
         model = Article
-        fields = '__all__'
+        fields = [
+            'id', 'blog', 'name', 'content', 'author',
+            'author_name', 'is_published', 'is_archived',
+            'created_at', 'has_user_liked', 'comments',
+        ]
+        read_only_fields = ('blog', )
 
 
-class CommentSerializer(serializers.ModelSerializer):
+# class CommentSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = Comment
+#         fields = '__all__'
 
-    class Meta:
-        model = Comment
-        fields = '__all__'
-        lookup_field = 'article_id'
-        extra_kwargs = {
-            'url': {'lookup_field': 'article_id'}
-        }
 
 class LikeSerializer(serializers.ModelSerializer):
 

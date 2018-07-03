@@ -14,6 +14,7 @@ from ..models.blog import Blog
 from ..models.articles import Article, Comment, Like
 from .permissions import IsRelatedPerson
 
+
 class BlogViewSet(viewsets.ModelViewSet):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
@@ -38,44 +39,37 @@ class ArticleViewSet(viewsets.ModelViewSet):
     #     serializer = self.get_serializer(instance, data=ser_data)
     #     serializer.is_valid(raise_exception=True)
     #     self.perform_update(serializer)
-    
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return IsAuthenticated(),
-        else:
-            return IsAuthenticated(), IsRelatedPerson(), 
-
-
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.filter()
-    serializer_class = CommentSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
             return IsAuthenticated(),
         else:
             return IsAuthenticated(), IsRelatedPerson(),
-    
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # def update(self, request, *args, **kwargs):
+    #     import ipdb; ipdb.set_trace()
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Article.objects.filter(blog__id=self.kwargs.get('blog_id'))
+        return Article.objects.filter(blog__id=self.kwargs.get('blog_id'), is_archived=False)
 
 
-# @api_view(['PATCH', ])
-# def increase_like(request, id):
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.filter()
+    serializer_class = CommentSerializer
+
+    # def get_permissions(self):
+    #     if self.request.method == 'GET':
+    #         return IsAuthenticated(),
+    #     else:
+    #         return IsAuthenticated(), IsRelatedPerson(),
     
-#     liked = False
-#     if request.method == 'PATCH':
-#         article_obj = get_object_or_404(Article, id=id)
-#         if article_obj:
-#             article_obj.like += 1 
-#             article_obj.save(update_fields=['like', ])
-#             liked = True
-#             return Response({'liked': liked, 'count': article_obj.like})
-    # else:
-#         return Response({'liked': liked}
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class LikeOrDislikeView(APIView):
@@ -83,7 +77,6 @@ class LikeOrDislikeView(APIView):
     permission_classes = (IsAuthenticated, IsRelatedPerson)
 
     def post(self, request, *args, **kwargs):
-        liked = False
         data = {
             'user': request.user.id,
             'article': kwargs.get('pk')
@@ -94,12 +87,15 @@ class LikeOrDislikeView(APIView):
             ser = LikeSerializer(data=data)
             if ser.is_valid():
                 ser.save()
-                liked = True
-        return Response({'liked':liked})
+        return Response()
 
 
 class CommentView(ListCreateAPIView):
     queryset = Comment.objects.all()
-    serializer_class = Comment
+    serializer_class = CommentSerializer
     permission_classes = (IsAuthenticated, )
+
+    # def get_queryset(self):
+    #     return Article.objects.filter(blog__id=self.kwargs.get('blog_id'))
+
 
