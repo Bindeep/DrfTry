@@ -1,0 +1,3 @@
+(0.001) SELECT "auth_user"."id", "auth_user"."password", "auth_user"."last_login", "auth_user"."is_superuser", "auth_user"."username", "auth_user"."first_name", "auth_user"."last_name", "auth_user"."email", "auth_user"."is_staff", "auth_user"."is_active", "auth_user"."date_joined" FROM "auth_user" ORDER BY "auth_user"."id" DESC LIMIT 1; args=()
+(0.000) BEGIN; args=None
+(0.001) INSERT INTO "blog_blog" ("title", "content", "created_at", "author_id") VALUES ('a', 'b', '2018-07-04 12:31:54.958703', 9); args=['a', 'b', '2018-07-04 12:31:54.958703', 9]

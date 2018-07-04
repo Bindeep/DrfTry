@@ -1,7 +1,11 @@
+import logging
 from django.db import models
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
+
 
 class Blog(models.Model):
     title = models.CharField('Blog Title', max_length=255)
@@ -19,3 +23,7 @@ class Blog(models.Model):
     
     def get_name(self):
         return self.author.username
+
+    def save(self, *args, **kwargs):
+        logging.info('this is just a test')
+        super().save(*args, **kwargs)

@@ -27,14 +27,14 @@ class Article(models.Model):
 
 class Comment(models.Model):
     article = models.ForeignKey(
-        Article, related_name='comments', on_delete=models.CASCADE)
+        Article, related_name='article_comments', on_delete=models.CASCADE)
     content = models.TextField()
     commented_by = models.ForeignKey(
-        User, related_name='comments', on_delete=models.DO_NOTHING)
+        User, related_name='user_comments', on_delete=models.DO_NOTHING)
     commented_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.title[:30]} commented by {self.commented_by}'
+        return f'{self.content[:30]} commented by {self.commented_by}'
 
     @property
     def commented_by_name(self):

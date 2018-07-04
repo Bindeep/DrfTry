@@ -17,7 +17,7 @@ class BlogSerializer(serializers.ModelSerializer):
     #     # view_name='article-detail',
     #     # read_only=True,
     # )
-    articles = BlogRelatedArticleSerializer(many=True)
+    articles = BlogRelatedArticleSerializer(many=True, read_only=True)
 
     class Meta:
         model = Blog
@@ -41,19 +41,31 @@ class BlogSerializer(serializers.ModelSerializer):
 #             'get_author'
 #         )
 
-
 class CommentSerializer(serializers.ModelSerializer):
+
+    is_user_comment = serializers.SerializerMethodField(read_only=True)
+
+    def get_is_user_comment(self, obj):
+        return obj.commented_by == self.context['request'].user
 
     class Meta:
         model = Comment
-        fields = ['content', 'commented_by_name']
+        fields = ['id', 'content', 'commented_by_name', 'commented_by', 'is_user_comment']
+
+    # def create(self, validated_data):
+    #     request = self.context['request']
+    #     validated_data['commented_by'] = request.user
+    #     import ipdb; ipdb.set_trace()
+    #     article_id = request.parser_context.get('kwargs').get('pk')
+    #     validated_data['article'] = Article.objects.get(pk=article_id)
+    #     import ipdb; ipdb.set_trace()
 
 
 class ArticleSerializer(serializers.ModelSerializer):
 
     created_at = serializers.SerializerMethodField()
     has_user_liked = serializers.SerializerMethodField()
-    comments = CommentSerializer(many=True)
+    article_comments = CommentSerializer(many=True)
 
     def get_created_at(self, obj):
         created_at = obj.created_at.strftime("%A %d. %B %Y")
@@ -85,10 +97,16 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'blog', 'name', 'content', 'author',
             'author_name', 'is_published', 'is_archived',
-            'created_at', 'has_user_liked', 'comments',
+            'created_at', 'has_user_liked', 'article_comments',
         ]
         read_only_fields = ('blog', )
 
+
+class ArticleCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Article
+        fields = '__all__'
 
 # class CommentSerializer(serializers.ModelSerializer):
 #
